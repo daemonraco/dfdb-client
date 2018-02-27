@@ -1,0 +1,30 @@
+{
+    "name": "dfdb-client",
+    "version": "0.0.1",
+    "description": "A simple terminal to interact with DocsOnFileDB databases.",
+    "main": "lib/cmd",
+    "types": "lib/cmd",
+    "scripts": {
+        "start": "node cmd.js"
+    },
+    "keywords": [
+        "nosql",
+        "emulated",
+        "serverless",
+        "on-file",
+        "zip"
+    ],
+    "author": {
+        "name": "Alejandro Dario Simi",
+        "url": "http://daemonraco.com/"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/daemonraco/dfdb-client.git"
+    },
+    "license": "MIT",
+    "dependencies": {
+        "dfdb": "^0.1.7",
+        "es6-promise": "^4.2.4"
+    }
+}
