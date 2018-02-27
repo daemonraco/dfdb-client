@@ -8,6 +8,7 @@ const { CURRENT_DB } = require('../includes/constants');
 module.exports = {
     commands: ['find'],
     description: 'Searches for some conditions on a collection (using only indexed fields).',
+    completer: 'collection',
     runner: ({ manager, args }) => {
         return new Promise((resolve, reject) => {
             const conn = manager.get(CURRENT_DB);

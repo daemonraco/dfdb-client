@@ -24,11 +24,24 @@ class Manager {
         return (line) => {
             let out;
 
-            if (line.split(' ').length < 2) {
+            line = line.split(' ');
+
+            if (line.length < 2) {
                 const hits = commands.filter((c) => c.startsWith(line));
-                out = [hits.length ? hits : commands, line];
+                out = [hits.length ? hits : commands, line.join(' ')];
             } else {
-                out = line;
+                const cmd = this._getCommandName(line[0]);
+                if (cmd) {
+                    line.shift();
+                    out = line.join(' ');
+
+                    const completerName = this._cmds[cmd].completer;
+                    if (typeof this._completers[completerName] !== 'undefined') {
+                        out = this._completers[completerName].complete({ manager: this, line: out });
+                    }
+                } else {
+                    out = line.join(' ');
+                }
             }
 
             return out;
@@ -101,9 +114,9 @@ class Manager {
 
         let args = text.split(' ');
         const cmdText = args.shift();
-        if (cmdText && typeof this._cmdTriggers[cmdText] !== 'undefined') {
-            const name = this._cmdTriggers[cmdText];
-            out = this._cmds[name].runner({ manager: this, args });
+        const cmdName = this._getCommandName(cmdText);
+        if (cmdName) {
+            out = this._cmds[cmdName].runner({ manager: this, args });
         } else {
             out = new Promise((resolve, reject) => {
                 reject(`Unknown command '${cmdText}'`);
@@ -147,6 +160,9 @@ class Manager {
     }
     //
     // Protected methods.
+    _getCommandName(givenName) {
+        return typeof this._cmdTriggers[givenName] !== 'undefined' ? this._cmdTriggers[givenName] : false;
+    }
     _initializeLineReader() {
         this._lineReader = readline.createInterface({
             input: process.stdin,
@@ -181,14 +197,30 @@ class Manager {
             this._finishAfterProcessing = false;
             this._pendingLines = [];
 
-
             this._fixedPromptPrefix = 'dfdb';
             this._displayExpanded = false;
+
             this.setPrompt();
-            this._cmds = {};
-            this._cmdTriggers = {};
+
             this._data = {};
 
+            this._completers = {};
+            const cptsPath = path.join(__dirname, '../completers');
+            const cptsPattern = /^(.+)\.cpt\.js$/;
+            fs.readdirSync(cptsPath)
+                .filter(x => x.match(cptsPattern))
+                .map(x => {
+                    return {
+                        name: x.replace(cptsPattern, '$1'),
+                        path: path.join(cptsPath, x)
+                    }
+                })
+                .forEach(cpt => {
+                    this._completers[cpt.name] = require(cpt.path);
+                });
+
+            this._cmds = {};
+            this._cmdTriggers = {};
             const cmdsPath = path.join(__dirname, '../commands');
             fs.readdirSync(cmdsPath)
                 .filter(x => x.match(/.+\.cmd\.js$/))
@@ -201,6 +233,13 @@ class Manager {
                 .forEach(cmd => {
                     this._cmds[cmd.name] = require(cmd.path);
                     this._cmds[cmd.name].commands.forEach(keyword => this._cmdTriggers[keyword] = cmd.name);
+
+                    if (typeof this._cmds[cmd.name].completer !== 'undefined') {
+                        const completerName = this._cmds[cmd.name].completer;
+                        if (typeof this._completers[completerName] === 'undefined') {
+                            delete this._cmds[cmd.name].completer;
+                        }
+                    }
                 });
         }
     }
