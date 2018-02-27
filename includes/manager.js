@@ -1,9 +1,11 @@
 'use strict';
 
 const chalk = require('chalk');
+const commander = require('commander');
 const fs = require('fs');
 const path = require('path');
 const Promise = require('es6-promise');
+const readline = require('readline');
 
 const { CURRENT_DB } = require('./constants');
 
@@ -121,14 +123,64 @@ class Manager {
             this._promptPrefix = `${this._fixedPromptPrefix}> `;
         }
     }
+    start() {
+        const pack = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json')).toString());
+
+        commander
+            .version(pack.version, '-v --version')
+            .option('-d, --dbname [dbname]', 'Database name.')
+            .option('-p, --dbpath [dbpath]', 'Database directory.')
+            .parse(process.argv);
+
+        if (commander.dbname) {
+            if (commander.dbpath) {
+                this._pendingLines.push(`connect ${commander.dbname} ${commander.dbpath}`);
+            } else {
+                this._pendingLines.push(`connect ${commander.dbname}`);
+            }
+        }
+
+        this._initializeLineReader();
+    }
     toggleExpanded() {
         this._displayExpanded = !this._displayExpanded;
     }
     //
     // Protected methods.
+    _initializeLineReader() {
+        this._lineReader = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+            //   terminal: true,
+            completer: this.completer(),
+            prompt: this.promptPrefix()
+        });
+
+        this._lineReader.on('close', () => {
+            if (this._pendingLines.length > 0) {
+                this._finishAfterProcessing = true;
+            } else {
+                console.log(``);
+                this.exit();
+            }
+        });
+
+        this._lineReader.on('line', line => {
+            this._pendingLines.push(line);
+            this._processPendingLine();
+        });
+
+        this._lineReader.prompt();
+        this._processPendingLine();
+    }
     _load() {
         if (!this._loaded) {
             this._loaded = true;
+
+            this._processingPendingLines = false;
+            this._finishAfterProcessing = false;
+            this._pendingLines = [];
+
 
             this._fixedPromptPrefix = 'dfdb';
             this._displayExpanded = false;
@@ -150,6 +202,37 @@ class Manager {
                     this._cmds[cmd.name] = require(cmd.path);
                     this._cmds[cmd.name].commands.forEach(keyword => this._cmdTriggers[keyword] = cmd.name);
                 });
+        }
+    }
+    _nextQuestion() {
+        this._lineReader.setPrompt(this.promptPrefix());
+        this._lineReader.prompt();
+    }
+    _processPendingLine() {
+        if (this._pendingLines.length > 0 && !this._processingPendingLines) {
+            this._processingPendingLines = true;
+            const line = this._pendingLines.shift();
+
+            const done = () => {
+                this._processingPendingLines = false;
+                this._processPendingLine();
+            };
+
+            this.run(line).then(msg => {
+                if (msg) {
+                    console.log(msg);
+                }
+                done();
+            }).catch(err => {
+                console.error(chalk.red(err));
+                done();
+            });
+        } else {
+            if (this._finishAfterProcessing) {
+                this.exit();
+            } else {
+                this._nextQuestion();
+            }
         }
     }
 }

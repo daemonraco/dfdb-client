@@ -24,6 +24,7 @@
     },
     "license": "MIT",
     "dependencies": {
+        "commander": "^2.14.1",
         "dfdb": "^0.1.7",
         "es6-promise": "^4.2.4"
     }
