@@ -6,6 +6,7 @@ const Promise = require('es6-promise');
 module.exports = {
     commands: ['help', '?'],
     description: 'Displays this help information.',
+    completer: 'command',
     runner: ({ manager, args }) => {
         return new Promise((resolve, reject) => {
             const cmdName = typeof args[0] === 'undefined' ? false : args[0];

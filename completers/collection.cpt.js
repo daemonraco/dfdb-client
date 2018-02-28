@@ -1,6 +1,5 @@
 'use strict';
 
-// const Promise = require('es6-promise');
 const { CURRENT_DB } = require('../includes/constants');
 
 module.exports = {

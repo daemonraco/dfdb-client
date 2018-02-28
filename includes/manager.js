@@ -18,35 +18,6 @@ class Manager {
     }
     //
     // Public methods.
-    completer() {
-        const commands = Object.keys(this._cmdTriggers).sort();
-
-        return (line) => {
-            let out;
-
-            line = line.split(' ');
-
-            if (line.length < 2) {
-                const hits = commands.filter((c) => c.startsWith(line));
-                out = [hits.length ? hits : commands, line.join(' ')];
-            } else {
-                const cmd = this._getCommandName(line[0]);
-                if (cmd) {
-                    line.shift();
-                    out = line.join(' ');
-
-                    const completerName = this._cmds[cmd].completer;
-                    if (typeof this._completers[completerName] !== 'undefined') {
-                        out = this._completers[completerName].complete({ manager: this, line: out });
-                    }
-                } else {
-                    out = line.join(' ');
-                }
-            }
-
-            return out;
-        };
-    }
     commands() {
         const out = [];
 
@@ -75,6 +46,9 @@ class Manager {
     }
     get(key) {
         return this._data[key];
+    }
+    getCommandName(givenName) {
+        return typeof this._cmdTriggers[givenName] !== 'undefined' ? this._cmdTriggers[givenName] : false;
     }
     prepareToDisplay(what, indent = '') {
         let out = '';
@@ -112,14 +86,21 @@ class Manager {
     run(text) {
         let out;
 
-        let args = text.split(' ');
-        const cmdText = args.shift();
-        const cmdName = this._getCommandName(cmdText);
-        if (cmdName) {
-            out = this._cmds[cmdName].runner({ manager: this, args });
+        text = text.trim();
+        if (text) {
+            let args = text.split(' ');
+            const cmdText = args.shift();
+            const cmdName = this.getCommandName(cmdText);
+            if (cmdName) {
+                out = this._cmds[cmdName].runner({ manager: this, args });
+            } else {
+                out = new Promise((resolve, reject) => {
+                    reject(`Unknown command '${cmdText}'`);
+                });
+            }
         } else {
             out = new Promise((resolve, reject) => {
-                reject(`Unknown command '${cmdText}'`);
+                resolve();
             });
         }
 
@@ -155,20 +136,20 @@ class Manager {
 
         this._initializeLineReader();
     }
+    triggers() {
+        return Object.keys(this._cmdTriggers).sort();
+    }
     toggleExpanded() {
         this._displayExpanded = !this._displayExpanded;
     }
     //
     // Protected methods.
-    _getCommandName(givenName) {
-        return typeof this._cmdTriggers[givenName] !== 'undefined' ? this._cmdTriggers[givenName] : false;
-    }
     _initializeLineReader() {
         this._lineReader = readline.createInterface({
             input: process.stdin,
             output: process.stdout,
             //   terminal: true,
-            completer: this.completer(),
+            completer: line => this._completers['command'].complete({ manager: this, line }),
             prompt: this.promptPrefix()
         });
 
