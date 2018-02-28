@@ -7,20 +7,24 @@ const Promise = require('es6-promise');
 const { CURRENT_DB } = require('../includes/constants');
 
 module.exports = {
-    commands: ['insert', 'i'],
-    description: 'Inserts a new document to certain collection.',
-    usage: 'insert collection-name document',
+    commands: ['update', 'u'],
+    description: 'Updates a document once certain collection.',
+    usage: 'update collection-name id document',
     completer: 'collection',
     runner: ({ manager, args }) => {
         return new Promise((resolve, reject) => {
             const conn = manager.get(CURRENT_DB);
             const collectionName = args.shift();
+            const docId = args.shift();
             const docString = args.join(' ');
             let doc;
             let error = false;
 
             if (!collectionName) {
                 error = `No collection name given.`;
+            }
+            if (!docId) {
+                error = `No document ID given.`;
             }
             if (!conn) {
                 error = `Not connected to any database`;
@@ -35,8 +39,8 @@ module.exports = {
             if (!error) {
                 conn.collection(collectionName)
                     .then(col => {
-                        col.insert(doc).then(insertedDoc => {
-                            resolve(manager.prepareToDisplay(insertedDoc));
+                        col.update(docId, doc).then(updatedDoc => {
+                            resolve(manager.prepareToDisplay(updatedDoc));
                         }).catch(err => reject(`${err}`));
                     })
                     .catch(err => reject(`${err}`));
