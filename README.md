@@ -5,3 +5,8 @@ A simple terminal to interact with DocsOnFileDB databases.
 ```
 npm install --save-dev dfdb-client
 ```
+
+Or:
+```
+npm install --global dfdb-client
+```
