@@ -21,11 +21,10 @@ module.exports = {
 
             if (!error) {
                 const collections = conn.collections();
-                let message = '';
+                let message = 'Collections:';
 
                 Object.keys(collections).forEach(key => {
-                    message += `'${chalk.green(collections[key].name)}':\n`;
-                    message += `    Type: '${chalk.yellow(collections[key].type)}'\n`;
+                    message += `\n    - '${chalk.green(collections[key].name)}' (type: '${chalk.yellow(collections[key].type)}')`;
                 });
 
                 resolve(message);

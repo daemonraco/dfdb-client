@@ -10,6 +10,7 @@ module.exports = {
     commands: ['indexes'],
     description: 'Lists all indexes of certain collection.',
     usage: 'indexes collection-name',
+    completer: 'collection',
     runner: ({ manager, args }) => {
         return new Promise((resolve, reject) => {
             const conn = manager.get(CURRENT_DB);
@@ -25,12 +26,11 @@ module.exports = {
 
             if (!error) {
                 conn.collection(collectionName).then(col => {
-                    let message = '';
+                    let message = 'Indexes:';
                     const indexes = col.indexes();
 
                     Object.keys(indexes).forEach(key => {
-                        message += `'${chalk.green(indexes[key].name)}':\n`;
-                        message += `    Field: '${chalk.yellow(indexes[key].field)}'\n`;
+                        message += `\n    - '${chalk.green(indexes[key].name)}' (field: '${chalk.yellow(indexes[key].field)}')`;
                     });
 
                     resolve(message);
