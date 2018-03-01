@@ -12,8 +12,8 @@ module.exports = {
         line = line.split(' ');
 
         if (line.length < 2) {
-            const hits = commands.filter((c) => c.startsWith(line));
-            out = [hits.length ? hits : commands, line.join(' ')];
+            const hits = commands.filter(c => c.startsWith(line));
+            out = [hits, line.join(' ')];
         } else {
             const cmd = manager.getCommandName(line[0]);
             if (cmd) {

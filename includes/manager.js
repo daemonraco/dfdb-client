@@ -36,16 +36,28 @@ class Manager {
         return this._displayExpanded;
     }
     exit() {
-        const close = () => {
-            console.log(chalk.cyan(`bye!`));
-            process.exit();
-        };
+        if (!this._exiting) {
+            this._exiting = true;
+            const close = () => {
+                console.log(chalk.cyan(`bye!`));
+                process.exit();
+            };
 
-        const currentDB = this.get(CURRENT_DB);
-        if (currentDB) {
-            currentDB.close().then(close, close);
-        } else {
-            close();
+            if (this._lineReader) {
+                this._lineReader.close();
+            }
+
+            const currentDB = this.get(CURRENT_DB);
+            if (currentDB) {
+                currentDB.close()
+                    .then(close)
+                    .catch(err => {
+                        console.error(chalk.red(`${err}`));
+                        close();
+                    });
+            } else {
+                close();
+            }
         }
     }
     get(key) {
@@ -148,12 +160,37 @@ class Manager {
     }
     //
     // Protected methods.
+    _autoComplete(line) {
+        let out = [[], line];
+
+        let pieces = line.split(' ');
+        if (pieces.length == 1) {
+            out = this._completers['command'].complete({ manager: this, line });
+        } else if (pieces.length > 1) {
+            let cmdPiece = pieces.shift();
+            let cmdName = this.getCommandName(cmdPiece);
+
+            if (cmdName && typeof this._cmds[cmdName].completer !== 'undefined') {
+                const completers = this._cmds[cmdName].completer;
+                const completerPosition = pieces.length - 1;
+                const currentCompleter = typeof completers[completerPosition] !== undefined ? completers[completerPosition] : false;
+
+                if (currentCompleter) {
+                    out = this._completers[currentCompleter].complete({ manager: this, line: pieces.pop() });
+                }
+            }
+        }
+
+        return out;
+    }
     _initializeLineReader() {
         this._lineReader = readline.createInterface({
             input: process.stdin,
             output: process.stdout,
-            //   terminal: true,
-            completer: line => this._completers['command'].complete({ manager: this, line }),
+            terminal: true,
+            historySize: 1000,
+            removeHistoryDuplicates: true,
+            completer: line => this._autoComplete(line),
             prompt: this.promptPrefix()
         });
 
@@ -161,6 +198,7 @@ class Manager {
             if (this._pendingLines.length > 0) {
                 this._finishAfterProcessing = true;
             } else {
+                this._lineReader = null;
                 console.log(``);
                 this.exit();
             }
@@ -207,11 +245,12 @@ class Manager {
             this._cmds = {};
             this._cmdTriggers = {};
             const cmdsPath = path.join(__dirname, '../commands');
+            const cmdsPattern = /^(.+)\.cmd\.js$/;
             fs.readdirSync(cmdsPath)
-                .filter(x => x.match(/.+\.cmd\.js$/))
+                .filter(x => x.match(cmdsPattern))
                 .map(x => {
                     return {
-                        name: x,
+                        name: x.replace(cmdsPattern, '$1'),
                         path: path.join(cmdsPath, x)
                     }
                 })
@@ -220,10 +259,16 @@ class Manager {
                     this._cmds[cmd.name].commands.forEach(keyword => this._cmdTriggers[keyword] = cmd.name);
 
                     if (typeof this._cmds[cmd.name].completer !== 'undefined') {
-                        const completerName = this._cmds[cmd.name].completer;
-                        if (typeof this._completers[completerName] === 'undefined') {
-                            delete this._cmds[cmd.name].completer;
+                        if (!Array.isArray(this._cmds[cmd.name].completer)) {
+                            this._cmds[cmd.name].completer = [this._cmds[cmd.name].completer];
                         }
+
+                        this._cmds[cmd.name].completer.forEach(completerName => {
+                            if (typeof this._completers[completerName] === 'undefined') {
+                                console.error(chalk.red(`Unknown completer '${completerName}' used in '${cmd.name}'.`));
+                                delete this._cmds[cmd.name].completer;
+                            }
+                        });
                     }
                 });
         }

@@ -14,6 +14,7 @@ module.exports = {
     commands: ['connect'],
     description: 'Opens a database connection and sets it as current.',
     usage: 'connect db-name [db-path]',
+    completer: ['ignore', 'directory'],
     runner: ({ manager, args }) => {
         return new Promise((resolve, reject) => {
             args[1] = typeof args[1] === 'undefined' ? '.' : args[1];

@@ -17,9 +17,9 @@ module.exports = {
             const collections = conn.collections();
             const options = [];
             Object.keys(collections).forEach(key => options.push(collections[key].name));
-            const hits = options.filter((c) => c.startsWith(line));
+            const hits = options.filter(c => c.startsWith(line));
 
-            out = [hits.length ? hits : options, line.join(' ')];
+            out = [hits, line.join(' ')];
         } else {
             out = line;
         }
