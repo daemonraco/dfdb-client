@@ -11,7 +11,10 @@ const path = require('path');
 const Promise = require('es6-promise');
 const readline = require('readline');
 
-const { CURRENT_DB } = require('./constants');
+const {
+    CMD_COMMAND,
+    CURRENT_DB
+} = require('./constants');
 
 class Manager {
     //
@@ -36,19 +39,27 @@ class Manager {
         return this._displayExpanded;
     }
     exit() {
+        //
+        // Skipping multiple exit calls.
         if (!this._exiting) {
             this._exiting = true;
+            //
+            // This is the real final step.
             const close = () => {
                 console.log(chalk.cyan(`bye!`));
                 process.exit();
             };
-
+            //
+            // Closing line reader.
             if (this._lineReader) {
                 this._lineReader.close();
             }
-
+            //
+            // Is there a connected database?
             const currentDB = this.get(CURRENT_DB);
             if (currentDB) {
+                //
+                // Closing current database.
                 currentDB.close()
                     .then(close)
                     .catch(err => {
@@ -165,7 +176,7 @@ class Manager {
 
         let pieces = line.split(' ');
         if (pieces.length == 1) {
-            out = this._completers['command'].complete({ manager: this, line });
+            out = this._completers[CMD_COMMAND].complete({ manager: this, line });
         } else if (pieces.length > 1) {
             let cmdPiece = pieces.shift();
             let cmdName = this.getCommandName(cmdPiece);
@@ -176,7 +187,11 @@ class Manager {
                 const currentCompleter = typeof completers[completerPosition] !== undefined ? completers[completerPosition] : false;
 
                 if (currentCompleter) {
-                    out = this._completers[currentCompleter].complete({ manager: this, line: pieces.pop() });
+                    out = this._completers[currentCompleter.name].complete({
+                        manager: this,
+                        line: pieces.pop(),
+                        params: currentCompleter.params
+                    });
                 }
             }
         }
@@ -263,9 +278,21 @@ class Manager {
                             this._cmds[cmd.name].completer = [this._cmds[cmd.name].completer];
                         }
 
-                        this._cmds[cmd.name].completer.forEach(completerName => {
-                            if (typeof this._completers[completerName] === 'undefined') {
-                                console.error(chalk.red(`Unknown completer '${completerName}' used in '${cmd.name}'.`));
+                        this._cmds[cmd.name].completer = this._cmds[cmd.name].completer.map(completer => {
+                            let out = {};
+
+                            if (typeof completer === 'object') {
+                                out = completer;
+                            } else {
+                                out.name = completer;
+                                out.params = {};
+                            }
+
+                            return out;
+                        });
+                        this._cmds[cmd.name].completer.forEach(completer => {
+                            if (typeof this._completers[completer.name] === 'undefined') {
+                                console.error(chalk.red(`Unknown completer '${completer.name}' used in '${cmd.name}'.`));
                                 delete this._cmds[cmd.name].completer;
                             }
                         });
