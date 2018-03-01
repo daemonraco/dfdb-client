@@ -1,3 +1,7 @@
+/**
+ * @file collection.cpt.js
+ * @author Alejandro Darío Simi
+ */
 'use strict';
 
 const { CURRENT_DB } = require('../includes/constants');

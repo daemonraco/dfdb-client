@@ -1,3 +1,7 @@
+/**
+ * @file update.cmd.js
+ * @author Alejandro Darío Simi
+ */
 'use strict';
 
 const chalk = require('chalk');

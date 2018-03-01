@@ -1,3 +1,7 @@
+/**
+ * @file command.cpt.js
+ * @author Alejandro Darío Simi
+ */
 'use strict';
 
 module.exports = {

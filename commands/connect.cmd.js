@@ -1,4 +1,7 @@
-// connect 010.testdb /var/nodejs/dfdb/test/.tmpdb
+/**
+ * @file connect.cmd.js
+ * @author Alejandro Darío Simi
+ */
 'use strict';
 
 const chalk = require('chalk');

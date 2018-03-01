@@ -1,3 +1,7 @@
+/**
+ * @file exit.cmd.js
+ * @author Alejandro Darío Simi
+ */
 'use strict';
 
 const Promise = require('es6-promise');

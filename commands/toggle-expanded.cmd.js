@@ -1,3 +1,7 @@
+/**
+ * @file toggle-expanded.cmd.js
+ * @author Alejandro Darío Simi
+ */
 'use strict';
 
 const Promise = require('es6-promise');

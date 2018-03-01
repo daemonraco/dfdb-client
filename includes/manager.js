@@ -1,3 +1,7 @@
+/**
+ * @file manager.js
+ * @author Alejandro Darío Simi
+ */
 'use strict';
 
 const chalk = require('chalk');
@@ -50,7 +54,7 @@ class Manager {
     getCommandName(givenName) {
         return typeof this._cmdTriggers[givenName] !== 'undefined' ? this._cmdTriggers[givenName] : false;
     }
-    prepareToDisplay(what, indent = '') {
+    prepareToDisplay(what, indent = '', forceExpand = false) {
         let out = '';
 
         if (Array.isArray(what)) {
@@ -60,7 +64,7 @@ class Manager {
             });
 
             if (out.length > 0) {
-                if (this._displayExpanded) {
+                if (this._displayExpanded || forceExpand) {
                     out = `[\n${out.join(',\n')}\n]`;
                 } else {
                     out = `[\n\n${out.join(',\n\n')}\n\n]`;
@@ -69,7 +73,7 @@ class Manager {
                 out = `[]`;
             }
         } else {
-            if (this._displayExpanded) {
+            if (this._displayExpanded || forceExpand) {
                 out = chalk.cyan(JSON.stringify(what, null, 2));
             } else {
                 out = chalk.cyan(JSON.stringify(what));

@@ -1,3 +1,7 @@
+/**
+ * @file drop-index.cmd.js
+ * @author Alejandro Darío Simi
+ */
 'use strict';
 
 const chalk = require('chalk');

@@ -1,3 +1,7 @@
+/**
+ * @file find.cmd.js
+ * @author Alejandro Darío Simi
+ */
 'use strict';
 
 const { DocsOnFileDB } = require('dfdb');
