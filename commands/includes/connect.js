@@ -19,7 +19,21 @@ module.exports = (manager, dbname, dbpath) => {
                 .then(conn => {
                     manager.set(CURRENT_DB, conn);
                     manager.setPrompt(`DB:${dbname}`);
-                    resolve(chalk.green(`Connected`));
+
+                    let messages = '';
+                    messages += chalk.green.bold(`Connected to '${dbname}' (directory: '${dbpath}')`);
+
+                    const collections = conn.collections();
+                    const collectionKeys = Object.keys(collections);
+                    if (collectionKeys.length > 0) {
+                        messages += `\nCollections:`;
+                        collectionKeys.forEach(key => {
+                            messages += `\n\t${chalk.cyan(collections[key].name)}`;
+                        });
+                    }
+
+                    messages += `\n`;
+                    resolve(messages);
                 })
                 .catch(err => reject(`${err}`));
         };

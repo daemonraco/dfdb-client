@@ -139,18 +139,19 @@ class Manager {
     }
     setPrompt(text) {
         if (text) {
-            this._promptPrefix = `${this._fixedPromptPrefix}[${text}]> `;
+            this._promptPrefix = chalk.green(`${this._fixedPromptPrefix}[ `);
+            this._promptPrefix += chalk.cyan(text);
+            this._promptPrefix += chalk.green(` ]> `);
         } else {
-            this._promptPrefix = `${this._fixedPromptPrefix}> `;
+            this._promptPrefix = chalk.green(`${this._fixedPromptPrefix}> `);
         }
     }
     start() {
-        const pack = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json')).toString());
-
         commander
-            .version(pack.version, '-v --version')
-            .option('-d, --dbname [dbname]', 'Database name.')
-            .option('-p, --dbpath [dbpath]', 'Database directory.')
+            .version(this._packageData.version, '-v --version')
+            .option('-d, --dbname [database-name]', 'Database name.')
+            .option('-p, --dbpath [database-path]', 'Database directory.')
+            .option('-o, --open [full-db-path]', 'Full database file path.')
             .parse(process.argv);
 
         if (commander.dbname) {
@@ -159,6 +160,8 @@ class Manager {
             } else {
                 this._pendingLines.push(`connect ${commander.dbname}`);
             }
+        } else if (commander.open) {
+            this._pendingLines.push(`open ${commander.open}`);
         }
 
         this._initializeLineReader();
@@ -199,6 +202,9 @@ class Manager {
         return out;
     }
     _initializeLineReader() {
+        console.log(chalk.bold(`Welcome to DocsOnFileDB client (v${this._packageData.version})`));
+        console.log(``);
+
         this._lineReader = readline.createInterface({
             input: process.stdin,
             output: process.stdout,
@@ -224,12 +230,13 @@ class Manager {
             this._processPendingLine();
         });
 
-        this._lineReader.prompt();
         this._processPendingLine();
     }
     _load() {
         if (!this._loaded) {
             this._loaded = true;
+
+            this._packageData = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json')).toString());
 
             this._processingPendingLines = false;
             this._finishAfterProcessing = false;

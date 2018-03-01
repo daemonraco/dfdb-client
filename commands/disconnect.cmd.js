@@ -11,7 +11,7 @@ const Promise = require('es6-promise');
 const { CURRENT_DB } = require('../includes/constants');
 
 module.exports = {
-    commands: ['closedb'],
+    commands: ['disconnect', 'closedb'],
     description: 'Closes current database connection.',
     runner: ({ manager, args }) => {
         return new Promise((resolve, reject) => {
