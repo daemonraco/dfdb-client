@@ -28,7 +28,7 @@ module.exports = (manager, dbname, dbpath) => {
                     if (collectionKeys.length > 0) {
                         messages += `\nCollections:`;
                         collectionKeys.forEach(key => {
-                            messages += `\n\t${chalk.cyan(collections[key].name)}`;
+                            messages += `\n\t- ${chalk.cyan(collections[key].name)}`;
                         });
                     }
 

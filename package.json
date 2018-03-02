@@ -1,6 +1,6 @@
 {
     "name": "dfdb-client",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "description": "A simple terminal to interact with DocsOnFileDB databases.",
     "main": "cmd.js",
     "preferGlobal": true,
