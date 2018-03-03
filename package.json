@@ -1,6 +1,6 @@
 {
     "name": "dfdb-client",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "description": "A simple terminal to interact with DocsOnFileDB databases.",
     "main": "cmd.js",
     "preferGlobal": true,
@@ -27,7 +27,7 @@
     "dependencies": {
         "chalk": "^2.3.1",
         "commander": "^2.14.1",
-        "dfdb": "^0.1.7",
+        "dfdb": "^0.1.10",
         "es6-promise": "^4.2.4"
     }
 }

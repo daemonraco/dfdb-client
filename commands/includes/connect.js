@@ -31,7 +31,9 @@ module.exports = (manager, dbname, dbpath) => {
                             messages += `\n\t- ${chalk.cyan(collections[key].name)}`;
                         });
                     }
-
+                    if (conn.hasInitializer()) {
+                        messages += `\nDatabase has an initializer configured.`;
+                    }
                     messages += `\n`;
                     resolve(messages);
                 })
