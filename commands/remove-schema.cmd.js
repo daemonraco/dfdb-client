@@ -1,5 +1,5 @@
 /**
- * @file exit.cmd.js
+ * @file remove-schema.cmd.js
  * @author Alejandro Darío Simi
  */
 'use strict';
