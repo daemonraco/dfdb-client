@@ -6,7 +6,9 @@
     "preferGlobal": true,
     "bin": "./cmd.js",
     "scripts": {
-        "start": "node cmd.js"
+        "start": "node cmd.js",
+        "pretest": "rm -fr ./test/tmp/*",
+        "test": "mkdir -p ./test/tmp;./node_modules/mocha/bin/mocha"
     },
     "keywords": [
         "nosql",
@@ -29,5 +31,11 @@
         "commander": "^2.14.1",
         "dfdb": "^0.1.10",
         "es6-promise": "^4.2.4"
+    },
+    "devDependencies": {
+        "chai": "^4.1.2",
+        "mocha": "^5.0.1",
+        "sprintf-js": "^1.1.1",
+        "suppose": "^0.6.2"
     }
 }
