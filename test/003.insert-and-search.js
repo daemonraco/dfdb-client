@@ -36,7 +36,7 @@ const testObject2 = {
 
 // ---------------------------------------------------------------------------- //
 // Testing.
-describe('dfdb-client: Connect and disconnect databases [002]', function () {
+describe('dfdb-client: Connect and disconnect databases [003]', function () {
     this.timeout(5000);
 
     it('counting elements before inserting (without conditions)', done => {
