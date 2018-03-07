@@ -4,6 +4,7 @@ const chalk = require('chalk');
 const fs = require('fs');
 const path = require('path');
 const { sprintf } = require('sprintf-js');
+const stripAnsi = require('strip-ansi');
 
 class CommandParser {
     //
@@ -14,16 +15,34 @@ class CommandParser {
     }
     //
     // Public methods.
-    displayLog() {
+    displayLog(marked = false) {
         let out = this._currentLog
             .split('\n')
-            .map(l => `\t| ${l}`)
+            .map(l => `\t| ${marked ? chalk.yellow('>>>') : ''}${l}${marked ? chalk.yellow('<<<') : ''}`)
             .join('\n');
 
         console.log(chalk.cyan(out));
     }
-    egrep(patternString) {
-        return this._currentLog.match(RegExp(`${patternString}`));
+    egrep(patternString, debug = false) {
+        const pattern = typeof patternString === 'string' ? new RegExp(`${patternString}`) : patternString;
+
+        if (debug) {
+            const debugResults = this._currentLog
+                .split('\n')
+                .map(l => {
+                    const match = l.match(pattern);
+                    const toReturn = match !== null ? l : null;
+                    console.log(`Line ${chalk.cyan(l)}: ${chalk.yellow(JSON.stringify(toReturn))}`);
+                    return toReturn;
+                })
+                .filter(l => l != null);
+            console.log(`egrep result: ${chalk.cyan(debugResults)}`);
+        }
+
+        return this._currentLog
+            .split('\n')
+            .map(l => l.match(pattern) !== null ? l : null)
+            .filter(l => l != null);
     }
     getLogPath(scriptPath) {
         const index = ++this._logIndex;
@@ -45,7 +64,7 @@ class CommandParser {
             .replace('.', '\\.'));
     }
     loadLog(logPath) {
-        this._currentLog = fs.readFileSync(logPath).toString();
+        this._currentLog = stripAnsi(fs.readFileSync(logPath).toString().replace(/\r/g, ''));
     }
     //
     // Protected methods.

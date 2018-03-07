@@ -1,0 +1,301 @@
+'use strict';
+
+// ---------------------------------------------------------------------------- //
+// Dependences.
+const assert = require('chai').assert;
+const fs = require('fs');
+const path = require('path');
+const suppose = require('suppose');
+const CommandParser = require('./assets/command-parser');
+
+const dbDir = path.join(__dirname, 'tmp');
+const dbName = '003.test';
+const collectionName = 'my_collection';
+const testObject = {
+    aNumber: 1,
+    aFloat: 2.2,
+    aString: ' 3 ',
+    anArray: [1, 2.2, ' 3 '],
+    anObject: {
+        aNumber: 1,
+        aFloat: 2.2,
+        aString: ' 3 ',
+    }
+};
+
+// ---------------------------------------------------------------------------- //
+// Testing.
+describe('dfdb-client: Connect and disconnect databases [002]', function () {
+    this.timeout(2000);
+
+    it('counting elements before inserting (without conditions)', done => {
+        const logFile = CommandParser.getLogPath(this.file);
+
+        suppose('node', ['cmd.js', '-d', dbName, '-p', dbDir], { debug: fs.createWriteStream(logFile) })
+            .when(/dfdb(.*)> /).respond(`count ${collectionName}\n`)
+            .when(/.*>/).respond('exit\n')
+            .on('error', function (err) {
+                assert.isTrue(false, `An error was not expected here. Error${err}`);
+                done();
+            })
+            .end(code => {
+                CommandParser.loadLog(logFile);
+
+                assert.strictEqual(CommandParser.grep(`Connected to '${dbName}' (directory: '${dbDir}')`).length, 1);
+                assert.strictEqual(CommandParser.grep(`dfdb[ DB:${dbName} ]>`).length, 2);
+                assert.strictEqual(CommandParser.egrep(`^0$`).length, 1);
+
+                done();
+            });
+    });
+
+    it('counting elements before inserting (with empty conditions)', done => {
+        const logFile = CommandParser.getLogPath(this.file);
+
+        suppose('node', ['cmd.js', '-d', dbName, '-p', dbDir], { debug: fs.createWriteStream(logFile) })
+            .when(/dfdb(.*)> /).respond(`count ${collectionName} {}\n`)
+            .when(/.*>/).respond('exit\n')
+            .on('error', function (err) {
+                assert.isTrue(false, `An error was not expected here. Error${err}`);
+                done();
+            })
+            .end(code => {
+                CommandParser.loadLog(logFile);
+
+                assert.strictEqual(CommandParser.grep(`Connected to '${dbName}' (directory: '${dbDir}')`).length, 1);
+                assert.strictEqual(CommandParser.grep(`dfdb[ DB:${dbName} ]>`).length, 2);
+                assert.strictEqual(CommandParser.egrep(`^0$`).length, 1);
+
+                done();
+            });
+    });
+
+    it('searching elements before inserting (without conditions)', done => {
+        const logFile = CommandParser.getLogPath(this.file);
+
+        suppose('node', ['cmd.js', '-d', dbName, '-p', dbDir], { debug: fs.createWriteStream(logFile) })
+            .when(/dfdb(.*)> /).respond(`search ${collectionName}\n`)
+            .when(/.*>/).respond('exit\n')
+            .on('error', function (err) {
+                assert.isTrue(false, `An error was not expected here. Error${err}`);
+                done();
+            })
+            .end(code => {
+                CommandParser.loadLog(logFile);
+
+                assert.strictEqual(CommandParser.grep(`Connected to '${dbName}' (directory: '${dbDir}')`).length, 1);
+                assert.strictEqual(CommandParser.grep(`dfdb[ DB:${dbName} ]>`).length, 2);
+                assert.strictEqual(CommandParser.egrep(/^\[\]$/).length, 1);
+
+                done();
+            });
+    });
+
+    it('searching elements before inserting (with empty conditions)', done => {
+        const logFile = CommandParser.getLogPath(this.file);
+
+        suppose('node', ['cmd.js', '-d', dbName, '-p', dbDir], { debug: fs.createWriteStream(logFile) })
+            .when(/dfdb(.*)> /).respond(`search ${collectionName} {}\n`)
+            .when(/.*>/).respond('exit\n')
+            .on('error', function (err) {
+                assert.isTrue(false, `An error was not expected here. Error${err}`);
+                done();
+            })
+            .end(code => {
+                CommandParser.loadLog(logFile);
+
+                assert.strictEqual(CommandParser.grep(`Connected to '${dbName}' (directory: '${dbDir}')`).length, 1);
+                assert.strictEqual(CommandParser.grep(`dfdb[ DB:${dbName} ]>`).length, 2);
+                assert.strictEqual(CommandParser.egrep(/^\[\]$/).length, 1);
+
+                done();
+            });
+    });
+
+    it('inserting a somehow complex document', done => {
+        const logFile = CommandParser.getLogPath(this.file);
+
+        suppose('node', ['cmd.js', '-d', dbName, '-p', dbDir], { debug: fs.createWriteStream(logFile) })
+            .when(/dfdb(.*)> /).respond(`insert ${collectionName} ${JSON.stringify(testObject)}\n`)
+            .when(/.*>/).respond('exit\n')
+            .on('error', function (err) {
+                assert.isTrue(false, `An error was not expected here. Error${err}`);
+                done();
+            })
+            .end(code => {
+                CommandParser.loadLog(logFile);
+
+                assert.strictEqual(CommandParser.grep(`Connected to '${dbName}' (directory: '${dbDir}')`).length, 1);
+                assert.strictEqual(CommandParser.grep(`dfdb[ DB:${dbName} ]>`).length, 2);
+
+                const insertResultStrs = CommandParser.egrep(/^\{"aNumber":1.+Z"}$/);
+                assert.strictEqual(insertResultStrs.length, 1);
+
+                let insertResult = null;
+                try { insertResult = JSON.parse(insertResultStrs[0]); } catch (e) { }
+                assert.isNotNull(insertResult);
+                assert.strictEqual(insertResult.aNumber, testObject.aNumber);
+                assert.strictEqual(insertResult.aFloat, testObject.aFloat);
+                assert.strictEqual(insertResult.aString, testObject.aString);
+                assert.deepEqual(insertResult.anArray, testObject.anArray);
+                assert.deepEqual(insertResult.anObject, testObject.anObject);
+                assert.deepEqual(insertResult._id, '1');
+                assert.property(insertResult, '_created');
+                assert.property(insertResult, '_updated');
+
+                done();
+            });
+    });
+
+    it('counting elements before inserting (without conditions)', done => {
+        const logFile = CommandParser.getLogPath(this.file);
+
+        suppose('node', ['cmd.js', '-d', dbName, '-p', dbDir], { debug: fs.createWriteStream(logFile) })
+            .when(/dfdb(.*)> /).respond(`count ${collectionName}\n`)
+            .when(/.*>/).respond('exit\n')
+            .on('error', function (err) {
+                assert.isTrue(false, `An error was not expected here. Error${err}`);
+                done();
+            })
+            .end(code => {
+                CommandParser.loadLog(logFile);
+
+                assert.strictEqual(CommandParser.grep(`Connected to '${dbName}' (directory: '${dbDir}')`).length, 1);
+                assert.strictEqual(CommandParser.grep(`dfdb[ DB:${dbName} ]>`).length, 2);
+                assert.strictEqual(CommandParser.egrep(`^1$`).length, 1);
+
+                done();
+            });
+    });
+
+    it('counting elements before inserting (with empty conditions)', done => {
+        const logFile = CommandParser.getLogPath(this.file);
+
+        suppose('node', ['cmd.js', '-d', dbName, '-p', dbDir], { debug: fs.createWriteStream(logFile) })
+            .when(/dfdb(.*)> /).respond(`count ${collectionName} {}\n`)
+            .when(/.*>/).respond('exit\n')
+            .on('error', function (err) {
+                assert.isTrue(false, `An error was not expected here. Error${err}`);
+                done();
+            })
+            .end(code => {
+                CommandParser.loadLog(logFile);
+
+                assert.strictEqual(CommandParser.grep(`Connected to '${dbName}' (directory: '${dbDir}')`).length, 1);
+                assert.strictEqual(CommandParser.grep(`dfdb[ DB:${dbName} ]>`).length, 2);
+                assert.strictEqual(CommandParser.egrep(`^1$`).length, 1);
+
+                done();
+            });
+    });
+
+    it('searching elements before inserting (without conditions)', done => {
+        const logFile = CommandParser.getLogPath(this.file);
+
+        suppose('node', ['cmd.js', '-d', dbName, '-p', dbDir], { debug: fs.createWriteStream(logFile) })
+            .when(/dfdb(.*)> /).respond(`search ${collectionName}\n`)
+            .when(/.*>/).respond('exit\n')
+            .on('error', function (err) {
+                assert.isTrue(false, `An error was not expected here. Error${err}`);
+                done();
+            })
+            .end(code => {
+                CommandParser.loadLog(logFile);
+
+                assert.strictEqual(CommandParser.grep(`Connected to '${dbName}' (directory: '${dbDir}')`).length, 1);
+                assert.strictEqual(CommandParser.grep(`dfdb[ DB:${dbName} ]>`).length, 2);
+
+                const insertResultStrs = CommandParser.egrep(/^([ \t]+)(\{"aNumber":1.+Z"\})$/);
+                assert.strictEqual(insertResultStrs.length, 1);
+
+                let insertResult = null;
+                try { insertResult = JSON.parse(insertResultStrs[0].trim()); } catch (e) { }
+                assert.isNotNull(insertResult);
+                assert.strictEqual(insertResult.aNumber, testObject.aNumber);
+                assert.strictEqual(insertResult.aFloat, testObject.aFloat);
+                assert.strictEqual(insertResult.aString, testObject.aString);
+                assert.deepEqual(insertResult.anArray, testObject.anArray);
+                assert.deepEqual(insertResult.anObject, testObject.anObject);
+                assert.deepEqual(insertResult._id, '1');
+                assert.property(insertResult, '_created');
+                assert.property(insertResult, '_updated');
+
+                done();
+            });
+    });
+
+    it('searching elements before inserting (with empty conditions)', done => {
+        const logFile = CommandParser.getLogPath(this.file);
+
+        suppose('node', ['cmd.js', '-d', dbName, '-p', dbDir], { debug: fs.createWriteStream(logFile) })
+            .when(/dfdb(.*)> /).respond(`search ${collectionName} {}\n`)
+            .when(/.*>/).respond('exit\n')
+            .on('error', function (err) {
+                assert.isTrue(false, `An error was not expected here. Error${err}`);
+                done();
+            })
+            .end(code => {
+                CommandParser.loadLog(logFile);
+
+                assert.strictEqual(CommandParser.grep(`Connected to '${dbName}' (directory: '${dbDir}')`).length, 1);
+                assert.strictEqual(CommandParser.grep(`dfdb[ DB:${dbName} ]>`).length, 2);
+
+                const insertResultStrs = CommandParser.egrep(/^([ \t]+)(\{"aNumber":1.+Z"\})$/);
+                assert.strictEqual(insertResultStrs.length, 1);
+
+                let insertResult = null;
+                try { insertResult = JSON.parse(insertResultStrs[0].trim()); } catch (e) { }
+                assert.isNotNull(insertResult);
+                assert.strictEqual(insertResult.aNumber, testObject.aNumber);
+                assert.strictEqual(insertResult.aFloat, testObject.aFloat);
+                assert.strictEqual(insertResult.aString, testObject.aString);
+                assert.deepEqual(insertResult.anArray, testObject.anArray);
+                assert.deepEqual(insertResult.anObject, testObject.anObject);
+                assert.deepEqual(insertResult._id, '1');
+                assert.property(insertResult, '_created');
+                assert.property(insertResult, '_updated');
+
+                done();
+            });
+    });
+
+    it('searching elements before inserting (with the ID as condition)', done => {
+        const logFile = CommandParser.getLogPath(this.file);
+        const condition = {
+            _id: {
+                $exact: '1'
+            }
+        };
+
+        suppose('node', ['cmd.js', '-d', dbName, '-p', dbDir], { debug: fs.createWriteStream(logFile) })
+            .when(/dfdb(.*)> /).respond(`search ${collectionName} ${JSON.stringify(condition)}\n`)
+            .when(/.*>/).respond('exit\n')
+            .on('error', function (err) {
+                assert.isTrue(false, `An error was not expected here. Error${err}`);
+                done();
+            })
+            .end(code => {
+                CommandParser.loadLog(logFile);
+
+                assert.strictEqual(CommandParser.grep(`Connected to '${dbName}' (directory: '${dbDir}')`).length, 1);
+                assert.strictEqual(CommandParser.grep(`dfdb[ DB:${dbName} ]>`).length, 2);
+
+                const insertResultStrs = CommandParser.egrep(/^([ \t]+)(\{"aNumber":1.+Z"\})$/);
+                assert.strictEqual(insertResultStrs.length, 1);
+
+                let insertResult = null;
+                try { insertResult = JSON.parse(insertResultStrs[0].trim()); } catch (e) { }
+                assert.isNotNull(insertResult);
+                assert.strictEqual(insertResult.aNumber, testObject.aNumber);
+                assert.strictEqual(insertResult.aFloat, testObject.aFloat);
+                assert.strictEqual(insertResult.aString, testObject.aString);
+                assert.deepEqual(insertResult.anArray, testObject.anArray);
+                assert.deepEqual(insertResult.anObject, testObject.anObject);
+                assert.deepEqual(insertResult._id, '1');
+                assert.property(insertResult, '_created');
+                assert.property(insertResult, '_updated');
+
+                done();
+            });
+    });
+});

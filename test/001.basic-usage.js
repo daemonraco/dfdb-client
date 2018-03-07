@@ -11,6 +11,8 @@ const CommandParser = require('./assets/command-parser');
 // ---------------------------------------------------------------------------- //
 // Testing.
 describe('dfdb-client: Basic usage [001]', function () {
+    this.timeout(2000);
+
     it('request a help text', done => {
         const logFile = CommandParser.getLogPath(this.file);
 
@@ -24,29 +26,29 @@ describe('dfdb-client: Basic usage [001]', function () {
             .end(code => {
                 CommandParser.loadLog(logFile);
 
-                assert.isNotNull(CommandParser.egrep(`'add-index'`));
-                assert.isNotNull(CommandParser.egrep(`'collections'`));
-                assert.isNotNull(CommandParser.egrep(`'connect'`));
-                assert.isNotNull(CommandParser.egrep(`'delete'`));
-                assert.isNotNull(CommandParser.egrep(`'disconnect'`));
-                assert.isNotNull(CommandParser.egrep(`'drop-collection'`));
-                assert.isNotNull(CommandParser.egrep(`'drop-index'`));
-                assert.isNotNull(CommandParser.egrep(`'exit'`));
-                assert.isNotNull(CommandParser.egrep(`'find'`));
-                assert.isNotNull(CommandParser.egrep(`'help'`));
-                assert.isNotNull(CommandParser.egrep(`'initializer'`));
-                assert.isNotNull(CommandParser.egrep(`'insert'`));
-                assert.isNotNull(CommandParser.egrep(`'indexes'`));
-                assert.isNotNull(CommandParser.egrep(`'open'`));
-                assert.isNotNull(CommandParser.egrep(`'rebuild-index'`));
-                assert.isNotNull(CommandParser.egrep(`'remove-schema'`));
-                assert.isNotNull(CommandParser.egrep(`'schema'`));
-                assert.isNotNull(CommandParser.egrep(`'search'`));
-                assert.isNotNull(CommandParser.egrep(`'set-initializer'`));
-                assert.isNotNull(CommandParser.egrep(`'set-schema'`));
-                assert.isNotNull(CommandParser.egrep(`'toggle-expanded'`));
-                assert.isNotNull(CommandParser.egrep(`'truncate'`));
-                assert.isNotNull(CommandParser.egrep(`'update'`));
+                assert.strictEqual(CommandParser.egrep(`'add-index'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'collections'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'connect'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'delete'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'disconnect'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'drop-collection'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'drop-index'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'exit'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'find'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'help'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'initializer'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'insert'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'indexes'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'open'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'rebuild-index'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'remove-schema'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'schema'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'search'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'set-initializer'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'set-schema'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'toggle-expanded'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'truncate'`).length, 1);
+                assert.strictEqual(CommandParser.egrep(`'update'`).length, 1);
 
                 done();
             });
