@@ -11,18 +11,18 @@ const CommandParser = require('./assets/command-parser');
 // ---------------------------------------------------------------------------- //
 // Testing.
 describe('dfdb-client: Basic usage [001]', function () {
-    this.timeout(2000);
+    this.timeout(5000);
 
     it('request a help text', done => {
         const logFile = CommandParser.getLogPath(this.file);
 
-        suppose('node', ['cmd.js'], { debug: fs.createWriteStream(logFile) })
+        suppose(path.join(__dirname, 'assets/runner.sh'), [], { debug: fs.createWriteStream(logFile) })
             .when(/dfdb(.*)> /).respond('help\n')
             .when(/dfdb(.*)> /).respond('exit\n')
-            .on('error', function (err) {
-                assert.isTrue(false, `An error was not expected here. Error${err}`);
-                done();
-            })
+            // .on('error', function (err) {
+            //     assert.isTrue(false, `An error was not expected here. Error: ${err}`);
+            //     done();
+            // })
             .end(code => {
                 CommandParser.loadLog(logFile);
 
