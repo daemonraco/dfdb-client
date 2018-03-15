@@ -23,17 +23,20 @@ Or:
 npm install --global dfdb-client
 ```
 # Command-line options
+<!-- AUTO:options -->
 ```
-Usage: dfdb-client [options]
-Options:
-  -v --version                  output the version number
-  -d, --dbname [database-name]  Database name.
-  -p, --dbpath [database-path]  Database directory.
-  -o, --open [full-db-path]     Full database file path.
-  -h, --help                    output usage information
+  Usage: dfdb-client [options]
+  Options:
+    -v --version                  output the version number
+    -d, --dbname [database-name]  Database name.
+    -p, --dbpath [database-path]  Database directory.
+    -o, --open [full-db-path]     Full database file path.
+    -h, --help                    output usage information
 ```
+<!-- /AUTO -->
 
 # DFDB terminal commands
+<!-- AUTO:commands -->
 ```
 These the available options:
     'add-index'
@@ -48,6 +51,10 @@ These the available options:
     'connect'
         Opens a database connection and sets it as current.
             Usage: connect db-name [db-path]
+
+    'count'
+        Counts documents for some conditions on a collection.
+            Aliases: 'c'
 
     'delete'
         Deletes a document from certain collection.
@@ -130,6 +137,7 @@ These the available options:
             Aliases: 'u'
             Usage: update collection-name id document
 ```
+<!-- /AUTO -->
 
 # Licence
 MIT &copy; 2018 [Alejandro Dario Simi](http://daemonraco.com)

@@ -1,12 +1,13 @@
 {
     "name": "dfdb-client",
-    "version": "0.0.10",
+    "version": "0.0.11",
     "description": "A simple terminal to interact with DocsOnFileDB databases.",
     "main": "cmd.js",
     "preferGlobal": true,
     "bin": "./cmd.js",
     "scripts": {
         "start": "node cmd.js",
+        "gen:docs": "node .tools/gen-docs.js",
         "pretest": "rm -fr ./test/tmp/*",
         "test": "mkdir -p ./test/tmp;./node_modules/mocha/bin/mocha"
     },
@@ -29,7 +30,7 @@
     "dependencies": {
         "chalk": "^2.3.1",
         "commander": "^2.14.1",
-        "dfdb": "^0.2.0",
+        "dfdb": "^0.2.1",
         "es6-promise": "^4.2.4"
     },
     "devDependencies": {
